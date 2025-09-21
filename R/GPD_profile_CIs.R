@@ -106,24 +106,98 @@ GPD_upper_endpoint <- function(threshold=0, scale=1, shape, ...){
 #' @param threshold GPD threshold value.
 #' @param scale Scale parameter.
 #' @param shape Shape parameter.
+#' @param obs_weights Optional observation weights for weighted likelihood.
+#' @param ill_defined_value Value to return if the arguments are out of support (e.g. negative scale, or non-positive arguments to logarithms).
 #'
 #' @return The GPD log-likelihood evaluated at the given parameters, given the data observations `Y`.
 #' @export
-GPD_log_likelihood <- function(Y, threshold, scale, shape){
+GPD_log_likelihood <- function(Y, threshold, scale, shape, obs_weights=NULL, ill_defined_value=-10^6){
   
-  Z <- (Y[Y>threshold]-threshold)
+  #TODO: ill_defined_value -Inf or -1e16 -1e15 ?
+  
+  exceeds <- (Y > threshold)
+  Z <- (Y[exceeds]-threshold)
   
   resc <- 1+shape*Z/scale
+  # cat('DEBUG: min resc=', min(resc), '\n')
   
-  if(any(resc <= 0) | any(scale <= 0)){return(-10^6)} #TODO: -Inf or -1e16 -1e15 ?
+  # w <- if(is.null(obs_weights)){rep(1, length(Z))}else{obs_weights[exceeds]}
   
-  if(length(scale)==1 & length(shape)==1){
-    return(-length(Z)*log(scale) - (1+1/shape)*sum(log(resc)))
-  }else if(length(scale)>1){
-    return(-sum(log(scale)) - sum(log(resc)*(1/shape + 1)))
+  if(is.null(obs_weights)){
+    # Unweighted log-likelihood
+    
+    # if(any(resc <= 0) | any(scale <= 0)){return(ill_defined_value)}
+    if(any(resc <= 1e-15) | any(scale <= 1e-15)){return(ill_defined_value)}
+    
+    # if(length(scale)==1 & length(shape)==1){
+    #   return(-length(Z)*log(scale) - (1+1/shape)*sum(log(resc)))
+    # }else if(length(scale)>1){
+    #   return(-sum(log(scale)) - sum(log(resc)*(1/shape + 1)))
+    # }else{
+    #   return(-length(Z)*log(scale) - sum(log(resc)*(1/shape + 1)))
+    # }
+    
+    if(length(scale)==1){
+      term1 <- (-length(Z)*log(scale))
+    }else if(length(scale)>1){
+      term1 <- (-sum(log(scale)))
+    }else{stop('Error with length(scale) in GPD_log_likelihood.')}
+    
+    if(length(shape)==1){
+      term2 <- (-(1+1/shape)*sum(log(resc)))
+    }else if(length(shape)>1){
+      term2 <- (-sum(log(resc)*(1/shape + 1)))
+    }else{stop('Error with length(shape) in GPD_log_likelihood.')}
+    
   }else{
-    return(-length(Z)*log(scale) - sum(log(resc)*(1/shape + 1)))
+    # Weighted log-likelihood
+    if(length(obs_weights)!=length(Y)){stop('obs_weights should be of the same length as Y.')}
+    
+    w <- obs_weights[exceeds]
+    
+    if(any(w<0)){stop('obs_weights should be non-negative.')}
+    if(sum(w)==0){stop('exceedence obs_weights cannot be all zero.')}
+    
+    # cat('DEBUG: sum(obs_weights)=', sum(obs_weights), '\n')
+    # cat('DEBUG: sum(w)=', sum(w), '\n')
+    # cat('DEBUG: scale=', scale, '\n')
+    # cat('DEBUG: shape=', shape, '\n')
+    
+    #TODO: normalize weights?
+    # w <- w / sum(w) * length(w) # sum(w) = length(w)
+    
+    nonzero_w_ids <- (w!=0)
+    w <- w[nonzero_w_ids]
+    resc <- resc[nonzero_w_ids]
+    
+    # if(any(resc[w!=0] <= 0)){return(ill_defined_value)}
+    if(any(resc <= 1e-15)){return(ill_defined_value)}
+    
+    
+    if(length(scale)==1){
+      # if(scale <= 0){return(ill_defined_value)}
+      if(scale <= 1e-15){return(ill_defined_value)}
+      # cat('DEBUG: => -sum(w)*log(scale)=', -sum(w)*log(scale), '\n')
+      term1 <- (-sum(w)*log(scale))
+    }else if(length(scale)>1){
+      scale <- scale[nonzero_w_ids]
+      # if(any(scale <= 0)){return(ill_defined_value)}
+      if(any(scale <= 1e-15)){return(ill_defined_value)}
+      term1 <- (-sum(w*log(scale)))
+    }else{stop('Error with length(scale) in GPD_log_likelihood.')}
+    
+    if(length(shape)==1){
+      # cat('DEBUG: => (1+1/shape)=', (1+1/shape), '\n')
+      # cat('DEBUG: => sum(w*log(resc))=', -sum(w)*log(scale) - (1+1/shape)*sum(w*log(resc)), '\n')
+      term2 <- (-(1+1/shape)*sum(w*log(resc)))
+    }else if(length(shape)>1){
+      shape <- shape[nonzero_w_ids]
+      term2 <- (-sum(w*log(resc)*(1/shape + 1)))
+    }else{stop('Error with length(shape) in GPD_log_likelihood.')}
+    
   }
+  # cat('DEBUG: ==> ll=', term1 + term2, '\n')
+  return(term1 + term2)
 }
 
 # GEV_log_likelihood_rlvl <- function(Y, return_lvl, scale, shape, p){
@@ -147,10 +221,12 @@ GPD_log_likelihood <- function(Y, threshold, scale, shape){
 #' @param scamat .
 #' @param shamat .
 #' @param negative .
+#' @param obs_weights Optional observation weights for weighted likelihood.
+#' @param ill_defined_value Value to return if the arguments are out of support (e.g. negative scale, or non-positive arguments to logarithms).
 #'
 #' @keywords internal
 GPD_log_likelihood_optim <- function(a, Y, threshold=0, threshold_lvl=0, parametrization=c("classical", "orthogonal", "quantile", "endpoint"), quantile_lvl=1.-(1./100.), # , "othogonal"
-                                     scamat=as.matrix(1), shamat=as.matrix(1), negative=FALSE) {
+                                     scamat=as.matrix(1), shamat=as.matrix(1), negative=FALSE, obs_weights=NULL, ill_defined_value=-10^6){
   parametrization <- match.arg(parametrization)
   
   if(parametrization=='orthogonal'){stop('orthogonal parametrization not implemented yet.')}
@@ -173,7 +249,8 @@ GPD_log_likelihood_optim <- function(a, Y, threshold=0, threshold_lvl=0, paramet
   scale <- c(scamat %*% sc_pars)
   shape <- c(shamat %*% sh_pars)
   
-  ll <- GPD_log_likelihood(Y, threshold, scale, shape)
+  ll <- GPD_log_likelihood(Y=Y, threshold=threshold, scale=scale, shape=shape, 
+                           obs_weights=obs_weights, ill_defined_value=ill_defined_value)
   
   if(negative){
     return(-ll)
@@ -197,9 +274,12 @@ GPD_log_likelihood_optim <- function(a, Y, threshold=0, threshold_lvl=0, paramet
 #' @param shape_cols Column indices of `X` to use as covariate for the (conditional) shape parameter (for conditional/non-stationary fits).
 #' @param out_param Additional output parametrization (same as `parametrization`, by default).
 #' If `out_param != parametrization`, the parameters are reparametrized from `parametrization` to `out_param` after estimation, in a separate output.
+#' @param obs_weights Optional observation weights for weighted likelihood.
+#' @param ill_defined_value Value to return if the arguments are out of support (e.g. negative scale, or non-positive arguments to logarithms).
 #' @param hessian Logical. Should a numerically differentiated Hessian matrix be returned? See [stats::optim()] for more details.
 #' @param maxit The maximum number of iterations. See [stats::optim()] for more details.
 #' @param method The optimisation method to be used. See [stats::optim()] for more details.
+#' @param verbose Verbose level, as integer.
 #' @param ... Other arguments passed to the `control` argument of [stats::optim()].
 #'
 #' @return The fitted maximum-likelihood GPD as a `GPD_ML` object, containing:
@@ -212,10 +292,12 @@ GPD_log_likelihood_optim <- function(a, Y, threshold=0, threshold_lvl=0, paramet
 #' \item{out_mle}{The estimated maximum likelihood GPD parameters, reparametrized in `out_param`.}
 #' \item{out_parametrization}{Additional output parametrization.}
 #' @export
-GPD_maxlik <- function(Y, threshold=0, threshold_lvl=0, parametrization=c("classical", "orthogonal", "quantile", "endpoint"),
+GPD_maxlik <- function(Y, threshold=0, threshold_lvl=0, parametrization=c("classical", "orthogonal", "quantile", "endpoint"), 
                        quantile_lvl=1.-(1./100.), orthogonal=FALSE,
-                       X=NULL, x_rlvl=NULL, scale_cols=NULL, shape_cols=NULL, out_param=parametrization,
-                       hessian=TRUE, maxit=1e6, method=c("Nelder-Mead", "BFGS", "CG", "L-BFGS-B", "SANN","Brent"), ...){
+                       X=NULL, x_rlvl=NULL, scale_cols=NULL, shape_cols=NULL, out_param=parametrization, 
+                       obs_weights=NULL, ill_defined_value=-10^6,
+                       hessian=TRUE, maxit=1e6, method=c("Nelder-Mead", "BFGS", "CG", "L-BFGS-B", "SANN","Brent"),
+                       verbose=1, ...){
   parametrization <- match.arg(parametrization)
   out_param <- match.arg(out_param, c("classical", "orthogonal", "quantile", "endpoint"))
   method <- match.arg(method)
@@ -236,11 +318,15 @@ GPD_maxlik <- function(Y, threshold=0, threshold_lvl=0, parametrization=c("class
   # TODO : inner parametrization instead of out_param? Here best?
   
   # Initialization
-  init <- GPD_param_init(Y=Y, threshold=threshold, threshold_lvl=threshold_lvl, nbsca=nbsca, nbsha=nbsha, parametrization=parametrization, quantile_lvl=quantile_lvl)
+  init <- GPD_param_init(Y=Y, threshold=threshold, threshold_lvl=threshold_lvl, nbsca=nbsca, nbsha=nbsha, 
+                         parametrization=parametrization, quantile_lvl=quantile_lvl, obs_weights=obs_weights)
+  
+  if(verbose>=10){{cat("\nDEBUG: GPD_maxlik: init value optim =", init, "\n")}}
   
   sol <- stats::optim(par=init, fn=GPD_log_likelihood_optim,
                       Y=Y, threshold=threshold, threshold_lvl=threshold_lvl, parametrization=parametrization, quantile_lvl=quantile_lvl,
                       scamat=scamat, shamat=shamat, negative=TRUE,
+                      obs_weights=obs_weights, ill_defined_value=ill_defined_value,
                       method = method, control = list(maxit = maxit, ...), hessian = hessian)
   mle <- sol$par
   out_mle <- GPD_change_parametrization(mle, threshold=threshold, threshold_lvl=threshold_lvl, parametrization=parametrization, new_parametrization=out_param,
@@ -271,17 +357,20 @@ GPD_maxlik <- function(Y, threshold=0, threshold_lvl=0, parametrization=c("class
 #' @param shamat .
 #' @param negative .
 #' @param orthogonal .
+#' @param obs_weights Optional observation weights for weighted likelihood.
+#' @param ill_defined_value Value to return if the arguments are out of support (e.g. negative scale, or non-positive arguments to logarithms).
 #'
 #' @keywords internal
 optim_step_GPD_profile <- function(a, val, Y, threshold=0, threshold_lvl=0, parametrization=c("classical", "orthogonal", "quantile", "endpoint"),
                                    id_param, quantile_lvl=1.-(1./100.),
-                                   scamat=as.matrix(1), shamat=as.matrix(1), negative=TRUE, orthogonal=FALSE){
+                                   scamat=as.matrix(1), shamat=as.matrix(1), negative=TRUE, orthogonal=FALSE, 
+                                   obs_weights=NULL, ill_defined_value=-10^6){
   parametrization <- match.arg(parametrization)
   
   pars_all <- vector_insert(a, val, id_param)
   
   pll <- GPD_log_likelihood_optim(a=pars_all, Y=Y, threshold=threshold, threshold_lvl=threshold_lvl, parametrization=parametrization, quantile_lvl=quantile_lvl,
-                                  scamat=scamat, shamat=shamat, negative=negative)
+                                  scamat=scamat, shamat=shamat, negative=negative, obs_weights=obs_weights, ill_defined_value=ill_defined_value)
   return(pll)
 }
 
@@ -298,17 +387,21 @@ optim_step_GPD_profile <- function(a, val, Y, threshold=0, threshold_lvl=0, para
 #' @param shamat .
 #' @param subparam_id .
 #' @param orthogonal .
+#' @param obs_weights Optional observation weights for weighted likelihood.
+#' @param ill_defined_value Value to return if the arguments are out of support (e.g. negative scale, or non-positive arguments to logarithms).
 #' @param init .
 #' @param hessian .
 #' @param maxit .
 #' @param method .
+#' @param verbose Verbose level, as integer.
 #' @param ... .
 #'
 #' @keywords internal
 GPD_profile_loglik_internal <- function(val, Y, threshold=0, threshold_lvl=0, parameter=c("shape", "scale", "quantile", "endpoint"), quantile_lvl=1.-(1./100.),
                                         scamat=as.matrix(1), shamat=as.matrix(1), subparam_id=0,
-                                        orthogonal=FALSE, init=NULL,
-                                        hessian=TRUE, maxit=1e6, method=c("Nelder-Mead", "BFGS", "CG", "L-BFGS-B", "SANN","Brent"), ...){
+                                        orthogonal=FALSE, obs_weights=NULL, ill_defined_value=-10^6, init=NULL,
+                                        hessian=TRUE, maxit=1e6, method=c("Nelder-Mead", "BFGS", "CG", "L-BFGS-B", "SANN","Brent"),
+                                        verbose=1, ...){
   parameter <- match.arg(parameter)
   method <- match.arg(method)
   nbsca <- ncol(scamat)
@@ -320,15 +413,19 @@ GPD_profile_loglik_internal <- function(val, Y, threshold=0, threshold_lvl=0, pa
   
   # Initialization
   if(is.null(init)){
-    init <- GPD_param_init(Y=Y, threshold=threshold, threshold_lvl=threshold_lvl, nbsca=nbsca, nbsha=nbsha, parametrization=parametrization, quantile_lvl=quantile_lvl)
+    init <- GPD_param_init(Y=Y, threshold=threshold, threshold_lvl=threshold_lvl, nbsca=nbsca, nbsha=nbsha, 
+                           parametrization=parametrization, quantile_lvl=quantile_lvl, obs_weights=obs_weights)
     init <- init[-id_param]
   }
   #TODO: else{ check init format/dimensions. }
   
+  if(verbose>=10){{cat("\nDEBUG: GPD_profile_loglik_internal: init value optim =", init, "\n")}}
+  
   sol <- stats::optim(par=init, fn=optim_step_GPD_profile,
                       val=val, Y=Y, threshold=threshold, threshold_lvl=threshold_lvl, parametrization=parametrization, 
                       id_param=id_param, quantile_lvl=quantile_lvl,
-                      scamat=scamat, shamat=shamat, negative=TRUE,
+                      scamat=scamat, shamat=shamat, negative=TRUE, orthogonal=orthogonal, 
+                      obs_weights=obs_weights, ill_defined_value=ill_defined_value, 
                       method = method, control = list(maxit = maxit, ...), hessian = hessian)
   mle_other <- sol$par
   
@@ -361,6 +458,8 @@ GPD_profile_loglik_internal <- function(val, Y, threshold=0, threshold_lvl=0, pa
 #' @param x_rlvl Covariate vector at which to reparametrize for the `'quantile'` or `'endpoint'` parametrizations (for conditional/non-stationary fits).
 #' @param scale_cols Column indices of `X` to use as covariate for the (conditional) scale parameter (for conditional/non-stationary fits).
 #' @param shape_cols Column indices of `X` to use as covariate for the (conditional) shape parameter (for conditional/non-stationary fits).
+#' @param obs_weights Optional observation weights for weighted likelihood.
+#' @param ill_defined_value Value to return if the arguments are out of support (e.g. negative scale, or non-positive arguments to logarithms).
 #' @param init Optional initial values for the remaining parameter's optimisation process, in the correct internal format.
 #' @param hessian Logical. Should a numerically differentiated Hessian matrix be returned? See [stats::optim()] for more details.
 #' @param maxit The maximum number of iterations. See [stats::optim()] for more details.
@@ -383,7 +482,7 @@ GPD_profile_loglik_internal <- function(val, Y, threshold=0, threshold_lvl=0, pa
 #' @export
 GPD_profile_loglik <- function(val, Y, threshold=0, threshold_lvl=0, parameter=c("shape", "scale", "quantile", "endpoint"),
                                subparam_id=0, quantile_lvl=1.-(1./100.), orthogonal=FALSE,
-                               X=NULL, x_rlvl=NULL, scale_cols=NULL, shape_cols=NULL,
+                               X=NULL, x_rlvl=NULL, scale_cols=NULL, shape_cols=NULL, obs_weights=NULL, ill_defined_value=-10^6,
                                init=NULL, hessian=TRUE, maxit=1e6, method=c("Nelder-Mead", "BFGS", "CG", "L-BFGS-B", "SANN","Brent"), ...){
   parameter <- match.arg(parameter)
   method <- match.arg(method)
@@ -402,7 +501,7 @@ GPD_profile_loglik <- function(val, Y, threshold=0, threshold_lvl=0, parameter=c
   
   out <- GPD_profile_loglik_internal(val=val, Y=Y, threshold=threshold, threshold_lvl=threshold_lvl, parameter=parameter, quantile_lvl=quantile_lvl,
                                      scamat=scamat, shamat=shamat, subparam_id=subparam_id,
-                                     orthogonal=orthogonal, init=init,
+                                     orthogonal=orthogonal, obs_weights=obs_weights, ill_defined_value=ill_defined_value, init=init,
                                      hessian=hessian, maxit=maxit, method=method, ...)
   return(out)
 }
@@ -429,6 +528,8 @@ GPD_profile_loglik <- function(val, Y, threshold=0, threshold_lvl=0, parameter=c
 #' @param initial_MLE_para Parametrization used for the initial maximum likelihood estimate (defaults to classical, for better stability).
 #' @param max_steps Maximum number of steps taken (in each direction).
 #' If the confidence line was not reached, the corresponding confidence interval endpoint will be infinite.
+#' @param obs_weights Optional observation weights for weighted likelihood.
+#' @param ill_defined_value Value to return if the arguments are out of support (e.g. negative scale, or non-positive arguments to logarithms).
 #' @param hessian Logical. Should a numerically differentiated Hessian matrix be returned? See [stats::optim()] for more details.
 #' @param maxit The maximum number of iterations. See [stats::optim()] for more details.
 #' @param method The optimisation method to be used for the initial maximum likelihood optimisation. See [stats::optim()] for more details.
@@ -459,7 +560,8 @@ GPD_profile_loglik <- function(val, Y, threshold=0, threshold_lvl=0, parameter=c
 GPD_profile_loglik_curve <- function(Y, threshold=0, threshold_lvl=0, parameter=c("shape", "scale", "quantile", "endpoint"),
                                      subparam_id=0, alpha=0.05, quantile_lvl=1.-(1./100.), orthogonal=FALSE,
                                      X=NULL, x_rlvl=NULL, scale_cols=NULL, shape_cols=NULL, warmstart_table=NULL,
-                                     stepsize=0.1, steps_beyond_conf=5, initial_MLE_para=c("classical", "same"), max_steps=1e4,
+                                     stepsize=0.1, steps_beyond_conf=5, initial_MLE_para=c("classical", "same"), max_steps=1e4, 
+                                     obs_weights=NULL, ill_defined_value=-10^6,
                                      hessian=TRUE, maxit=1e6, method=c("Nelder-Mead", "BFGS", "CG", "L-BFGS-B", "SANN", "Brent"),
                                      method_prof=c("default", "Nelder-Mead", "BFGS", "CG", "L-BFGS-B", "SANN", "Brent"), ...){
   parameter <- match.arg(parameter)
@@ -481,7 +583,7 @@ GPD_profile_loglik_curve <- function(Y, threshold=0, threshold_lvl=0, parameter=
   
   sol_mle <- GPD_maxlik(Y=Y, threshold=threshold, threshold_lvl=threshold_lvl, parametrization=inner_pram, quantile_lvl=quantile_lvl, orthogonal=orthogonal,
                         X=X, x_rlvl=x_rlvl, scale_cols=scale_cols, shape_cols=shape_cols,
-                        out_param=parametrization, hessian=hessian, maxit=maxit, method=method, ...)
+                        out_param=parametrization, obs_weights=obs_weights, ill_defined_value=ill_defined_value, hessian=hessian, maxit=maxit, method=method, ...)
   # mle and its log-likelihood
   mle <- sol_mle$out_mle
   ll_mle <- sol_mle$loglik
@@ -535,7 +637,7 @@ GPD_profile_loglik_curve <- function(Y, threshold=0, threshold_lvl=0, parameter=
     }else{
       out <- GPD_profile_loglik_internal(val=vali, Y=Y, threshold=threshold, threshold_lvl=threshold_lvl, parameter=parameter, quantile_lvl=quantile_lvl,
                                          scamat=scamat, shamat=shamat, subparam_id=subparam_id,
-                                         orthogonal=orthogonal, init=mle[-id_param],
+                                         orthogonal=orthogonal, obs_weights=obs_weights, ill_defined_value=ill_defined_value, init=mle[-id_param],
                                          hessian=hessian, maxit=maxit, method=method_prof, ...)
       plli <- out$loglik
       
@@ -609,6 +711,8 @@ GPD_profile_loglik_curve <- function(Y, threshold=0, threshold_lvl=0, parameter=
 #' @param initial_MLE_para Parametrization used for the initial maximum likelihood estimate (defaults to classical, for better stability).
 #' @param max_steps Maximum number of steps taken (in each direction).
 #' If the confidence line was not reached, the corresponding confidence interval endpoint will be infinite.
+#' @param obs_weights Optional observation weights for weighted likelihood.
+#' @param ill_defined_value Value to return if the arguments are out of support (e.g. negative scale, or non-positive arguments to logarithms).
 #' @param hessian Logical. Should a numerically differentiated Hessian matrix be returned? See [stats::optim()] for more details.
 #' @param maxit The maximum number of iterations. See [stats::optim()] for more details.
 #' @param method The optimisation method to be used for the initial maximum likelihood optimisation. See [stats::optim()] for more details.
@@ -640,7 +744,8 @@ GPD_profile_loglik_curve <- function(Y, threshold=0, threshold_lvl=0, parameter=
 GPD_profile_CI <- function(Y, threshold=0, threshold_lvl=0, parameter=c("shape", "scale", "quantile", "endpoint"),
                            subparam_id=0, alpha=0.05, quantile_lvl=1.-(1./100.), orthogonal=FALSE,
                            X=NULL, x_rlvl=NULL, scale_cols=NULL, shape_cols=NULL, warmstart_table=NULL,
-                           init_step_pos=100, init_step_neg=10, tol=0.01, steps_beyond_conf=5, initial_MLE_para=c("classical", "same"), max_steps=1e3,
+                           init_step_pos=100, init_step_neg=10, tol=0.01, steps_beyond_conf=5, initial_MLE_para=c("classical", "same"), max_steps=1e3, 
+                           obs_weights=NULL, ill_defined_value=-10^6,
                            hessian=TRUE, maxit=1e6, method=c("Nelder-Mead", "BFGS", "CG", "L-BFGS-B", "SANN", "Brent"),
                            method_prof=c("default", "Nelder-Mead", "BFGS", "CG", "L-BFGS-B", "SANN", "Brent"), verbose=1, ...){
   parameter <- match.arg(parameter)
@@ -664,7 +769,8 @@ GPD_profile_CI <- function(Y, threshold=0, threshold_lvl=0, parameter=c("shape",
   
   sol_mle <- GPD_maxlik(Y=Y, threshold=threshold, threshold_lvl=threshold_lvl, parametrization=inner_pram, quantile_lvl=quantile_lvl, orthogonal=orthogonal,
                         X=X, x_rlvl=x_rlvl, scale_cols=scale_cols, shape_cols=shape_cols,
-                        out_param=parametrization, hessian=hessian, maxit=maxit, method=method, ...)
+                        out_param=parametrization, obs_weights=obs_weights, ill_defined_value=ill_defined_value, hessian=hessian, maxit=maxit, method=method,
+                        verbose=verbose, ...)
   # mle and its log-likelihood
   mle <- sol_mle$out_mle
   ll_mle <- sol_mle$loglik
@@ -725,8 +831,8 @@ GPD_profile_CI <- function(Y, threshold=0, threshold_lvl=0, parameter=c("shape",
     }else{
       out <- GPD_profile_loglik_internal(val=vali, Y=Y, threshold=threshold, threshold_lvl=threshold_lvl, parameter=parameter, quantile_lvl=quantile_lvl,
                                          scamat=scamat, shamat=shamat, subparam_id=subparam_id,
-                                         orthogonal=orthogonal, init=mle[-id_param],
-                                         hessian=hessian, maxit=maxit, method=method_prof, ...)
+                                         orthogonal=orthogonal, obs_weights=obs_weights, ill_defined_value=ill_defined_value, init=mle[-id_param],
+                                         hessian=hessian, maxit=maxit, method=method_prof, verbose=verbose, ...)
       plli <- out$loglik
       # TODO: catch errors and set to -Inf or check if plli is Inf/-Inf/NA/NaN/NULL
       
@@ -860,6 +966,8 @@ GPD_profile_CI <- function(Y, threshold=0, threshold_lvl=0, parameter=c("shape",
 #' @param initial_MLE_para Parametrization used for the initial maximum likelihood estimate (defaults to classical, for better stability).
 #' @param max_steps Maximum number of steps taken (in each direction).
 #' If the confidence line was not reached, the corresponding confidence interval endpoint will be infinite.
+#' @param obs_weights Optional observation weights for weighted likelihood.
+#' @param ill_defined_value Value to return if the arguments are out of support (e.g. negative scale, or non-positive arguments to logarithms).
 #' @param hessian Logical. Should a numerically differentiated Hessian matrix be returned? See [stats::optim()] for more details.
 #' @param maxit The maximum number of iterations. See [stats::optim()] for more details.
 #' @param method The optimisation method to be used for the initial maximum likelihood optimisation. See [stats::optim()] for more details.
@@ -886,8 +994,9 @@ GPD_profile_CI <- function(Y, threshold=0, threshold_lvl=0, parameter=c("shape",
 GPD_profile_CIs_multiple <- function(Y, threshold=0, threshold_lvl=0, parameter=c("quantile", "endpoint"),
                                      alpha=0.05, quantile_lvl=1.-(1./100.), orthogonal=FALSE,
                                      X=NULL, X_rlvl=NULL, scale_cols=NULL, shape_cols=NULL,
-                                     init_step_pos=100, init_step_neg=10, tol=0.01, steps_beyond_conf=5,
-                                     initial_MLE_para=c("classical", "same"), max_steps=1e4,
+                                     init_step_pos=100, init_step_neg=10, tol=0.01, steps_beyond_conf=5, 
+                                     initial_MLE_para=c("classical", "same"), max_steps=1e4, 
+                                     obs_weights=NULL, ill_defined_value=-10^6,
                                      hessian=TRUE, maxit=1e6, method=c("Nelder-Mead", "BFGS", "CG", "L-BFGS-B", "SANN", "Brent"),
                                      method_prof=c("default", "Nelder-Mead", "BFGS", "CG", "L-BFGS-B", "SANN", "Brent"),
                                      parallel_strat=c("none", "multisession", "sequential", "multicore"), n_workers=NULL, ...){
@@ -906,11 +1015,11 @@ GPD_profile_CIs_multiple <- function(Y, threshold=0, threshold_lvl=0, parameter=
     #                                 warmstart_table=NULL, stepsize=stepsize, steps_beyond_conf=steps_beyond_conf,
     #                                 initial_MLE_para=initial_MLE_para, max_steps=max_steps,
     #                                 hessian=hessian, maxit=maxit, method=method, method_prof=method_prof, ...)
-    out <- GPD_profile_CI(Y=Y, threshold=threshold, threshold_lvl=threshold_lvl,
+    out <- GPD_profile_CI(Y=Y, threshold=threshold, threshold_lvl=threshold_lvl, 
                           parameter=parameter, subparam_id=0, alpha=alpha, quantile_lvl=quantile_lvl, orthogonal=orthogonal,
                           X=X, x_rlvl=X_rlvl[i,], scale_cols=scale_cols, shape_cols=shape_cols,
                           warmstart_table=NULL, init_step_pos=init_step_pos, init_step_neg=init_step_neg, tol=tol, steps_beyond_conf=steps_beyond_conf,
-                          initial_MLE_para=initial_MLE_para, max_steps=max_steps,
+                          initial_MLE_para=initial_MLE_para, max_steps=max_steps, obs_weights=obs_weights, ill_defined_value=ill_defined_value,
                           hessian=hessian, maxit=maxit, method=method, method_prof=method_prof, ...)
     tibble::as_tibble(as.list(c(obs=i, out$mle[parameter], ci_down=out$ci[1], ci_up=out$ci[2])))
   }
@@ -1038,17 +1147,47 @@ GPD_covariate_matrix <- function(X=NULL, x_rlvl=NULL, scale_cols=NULL, shape_col
 #' @returns The initial parameter values as a vector, in the correct internal format.
 #'
 #' @keywords internal
-GPD_param_init <- function(Y, threshold=0, threshold_lvl=0, nbsca, nbsha, parametrization=c("classical", "orthogonal", "quantile", "endpoint"), quantile_lvl){
+GPD_param_init <- function(Y, threshold=0, threshold_lvl=0, nbsca, nbsha, 
+                           parametrization=c("classical", "orthogonal", "quantile", "endpoint"), 
+                           quantile_lvl, obs_weights=NULL){
   parametrization <- match.arg(parametrization)
   
   if(parametrization=='orthogonal'){stop('orthogonal parametrization not implemented yet.')}
   
-  Z <- Y[Y>threshold]
+  # Z <- Y[Y>threshold]
+  exceeds <- (Y > threshold)
+  Z <- c(Y[exceeds]-threshold) #TODO check if -threshold or not
   
+  if(is.null(obs_weights)){
+    # Unweighted mean and variance
+    meanZ <- mean(Z, na.rm = TRUE)
+    varZ <- stats::var(Z, na.rm = TRUE)
+    
+  }else{
+    if(length(obs_weights)!=length(Y)){stop('obs_weights should be of the same length as Y.')}
+    
+    w <- obs_weights[exceeds]
+    
+    if(any(w<0)){stop('obs_weights should be non-negative.')}
+    if(sum(w)==0){stop('exceedence obs_weights cannot be all zero.')}
+    
+    # normalize weights
+    w <- c(w/sum(w))
+    # w <- c(w/sum(w)*length(w)) # to sum to 1
+    
+    # Weighted mean and variance
+    meanZ <- stats::weighted.mean(Z, w, na.rm=TRUE)
+    varZ <- stats::weighted.mean((Z - meanZ)^2, w, na.rm=TRUE)
+    # wvZ <- stats::weighted.mean((Z - wmZ)^2, w, na.rm=TRUE) * (sum(w)/(sum(w)^2 - sum(w^2))) # weighted var
+    # wvZ <- sum(w * (Z - wmZ)^2, na.rm=TRUE)
+    # wvZ <- sum(w * (Z - mZ)^2, na.rm=TRUE) / (1 - sum(w^2)) # weighted var
+  }
   # GEV: inisc <- c(sqrt(6 * stats::var(Y))/pi, rep(0,nbsca-1))
   # GEV: inilo <- c(mean(Y) - 0.57722 * inisc[1], rep(0,nbloc-1))
-  inisc <- c(sqrt(6 * stats::var(Z))/pi, rep(0,nbsca-1))
-  in1 <- mean(Z, na.rm = TRUE) - 0.57722 * inisc[1]
+  
+  inisc <- c(sqrt(6 * varZ)/pi, rep(0,nbsca-1))
+  in1 <- meanZ - 0.57722 * inisc[1]
+  
   if(parametrization=="endpoint"){
     inish <- c(-0.1, rep(0,nbsha-1))
     iniep <- c(GPD_endpoint(threshold, inisc[1], inish[1]), rep(0,nbsca-1))
@@ -1063,6 +1202,7 @@ GPD_param_init <- function(Y, threshold=0, threshold_lvl=0, nbsca, nbsha, parame
       init = c(inisc, inish)
     }
   }
+  
   return(init)
 }
 
