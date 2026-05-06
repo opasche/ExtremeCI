@@ -18,7 +18,6 @@ License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
 Imports: 
     doFuture,
     dplyr,
@@ -32,3 +31,6 @@ Imports:
     tibble,
     tidyr,
     tidyselect
+URL: https://github.com/opasche/ExtremeCI, https://opasche.github.io/ExtremeCI/
+BugReports: https://github.com/opasche/ExtremeCI/issues
+Config/roxygen2/version: 8.0.0

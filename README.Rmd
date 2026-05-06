@@ -16,6 +16,7 @@ knitr::opts_chunk$set(
 # ExtremeCI
 
 <!-- badges: start -->
+[![R-CMD-check](https://github.com/opasche/ExtremeCI/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/opasche/ExtremeCI/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 The `ExtremeCI` R package provides versatile algorithms to efficently infer confidence intervals

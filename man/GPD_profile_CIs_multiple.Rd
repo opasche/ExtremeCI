@@ -89,7 +89,7 @@ If the confidence line was not reached, the corresponding confidence interval en
 that can be active at the same time before blocking.
 If a function, it is called without arguments when the future is created and its value is used to configure the workers.
 The function should return a numeric scalar.
-Defaults to \code{\link[future:re-exports]{future::availableCores()}}\code{-1} if \code{NULL} (default), with \code{"multicore"} constraint in the relevant case.
+Defaults to \code{\link[future:availableCores]{future::availableCores()}}\code{-1} if \code{NULL} (default), with \code{"multicore"} constraint in the relevant case.
 Ignored if \code{strategy=="sequential"}.}
 
 \item{...}{Other arguments passed to the \code{control} argument of \code{\link[stats:optim]{stats::optim()}}.}
