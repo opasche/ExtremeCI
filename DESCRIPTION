@@ -13,7 +13,7 @@ Description: This framework provides versatile algorithms to efficiently infer c
   Unlike existing algorithms, the CI endpoints are found without the need for a strict prespecified range,
   can be covariate-dependent, and can be based on weighted samples.
   This package is motivated by Zeder et al. (2023) <doi:10.1029/2023GL104090> and by
-  Pasche et al. (2026) <doi:10.48550/arXiv.2505.08578>.
+  Pasche et al. (2026) <doi:10.1007/s10687-026-00536-9>.
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true

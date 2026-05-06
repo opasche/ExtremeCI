@@ -24,7 +24,7 @@ models with novel confidence endpoint search procedures based on binary
 search, which do no require a prespecified range. The CIs can also be
 inferred from weighted samples (work in progress). This package is
 motivated by Zeder et al. (2023) <doi:10.1029/2023GL104090> and by
-Pasche et al. (2026) <doi:10.48550/arXiv.2505.08578>.
+Pasche et al. (2026) <doi:10.1007/s10687-026-00536-9>.
 
 ## Installation
 
