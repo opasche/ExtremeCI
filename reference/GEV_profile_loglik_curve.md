@@ -186,4 +186,6 @@ confidence line and resulting `(1-alpha)` confidence interval, as a
 
 ## References
 
-TODO: Coles Book ?
+Coles, S. (2001). *An Introduction to Statistical Modeling of Extreme
+Values*. Springer.
+doi:[10.1007/978-1-4471-3675-0](https://doi.org/10.1007/978-1-4471-3675-0).
