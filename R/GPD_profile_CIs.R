@@ -556,7 +556,7 @@ GPD_profile_loglik <- function(val, Y, threshold=0, threshold_lvl=0, parameter=c
 #' @export
 #'
 #' @references
-#' TODO: Coles Book ?
+#' Coles, S. (2001). *An Introduction to Statistical Modeling of Extreme Values*. Springer. doi:[10.1007/978-1-4471-3675-0](https://doi.org/10.1007/978-1-4471-3675-0).
 GPD_profile_loglik_curve <- function(Y, threshold=0, threshold_lvl=0, parameter=c("shape", "scale", "quantile", "endpoint"),
                                      subparam_id=0, alpha=0.05, quantile_lvl=1.-(1./100.), orthogonal=FALSE,
                                      X=NULL, x_rlvl=NULL, scale_cols=NULL, shape_cols=NULL, warmstart_table=NULL,
@@ -740,7 +740,7 @@ GPD_profile_loglik_curve <- function(Y, threshold=0, threshold_lvl=0, parameter=
 #' @export
 #'
 #' @references
-#' TODO: Coles Book ?
+#' Coles, S. (2001). *An Introduction to Statistical Modeling of Extreme Values*. Springer. doi:[10.1007/978-1-4471-3675-0](https://doi.org/10.1007/978-1-4471-3675-0).
 GPD_profile_CI <- function(Y, threshold=0, threshold_lvl=0, parameter=c("shape", "scale", "quantile", "endpoint"),
                            subparam_id=0, alpha=0.05, quantile_lvl=1.-(1./100.), orthogonal=FALSE,
                            X=NULL, x_rlvl=NULL, scale_cols=NULL, shape_cols=NULL, warmstart_table=NULL,

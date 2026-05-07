@@ -1,4 +1,66 @@
 url: https://opasche.github.io/ExtremeCI/
 template:
   bootstrap: 5
+  light-switch: yes
+reference:
+- title: Profile CIs using peaks over threshold (generalized Pareto distribution)
+  desc: In most cases, if the data is not aggregated as block-maxima, the generalized Pareto distribution is the best choice for extrapolating quantile estimates beyond the range of observations as it makes better use of available data, at the cost of needing to select an appropriate threshold value.
+  contents: 
+  - GPD_profile_loglik_curve
+  - GPD_profile_CI
+  - GPD_profile_CIs_multiple
+  - GPD_profile_loglik
+  - GPD_maxlik
+  - GPD_quantiles
+  - GPD_endpoint
+  - GPD_log_likelihood
+  - GPD_change_parametrization
+- title: Profile CIs using block maxima (generalized extreme value distribution)
+  desc: When the data at hand is aggregated as block maxima (e.g. yearly maxima), the generalized extreme value distribution is the natural choice to extrapolate quantile estimates beyond the range of observations.
+  contents:
+  - GEV_profile_loglik_curve
+  - GEV_profile_CI
+  - GEV_profile_CIs_multiple
+  - GEV_profile_loglik
+  - GEV_maxlik
+  - GEV_return_level
+  - GEV_endpoint
+  - GEV_log_likelihood
+  - GEV_change_parametrization
+- title: Plotting helpers
+  desc: Helper functions for plotting the profile log-likelihood curves and nonstationary quantile estimates with confidence intervals, as a function of data, using `ggplot2`.
+  contents:
+  - plot_profile_loglik_curve
+  - plot_data_quantile_ci
+- title: internal
+  contents:
+  - GPD_unrestricted_endpoint
+  - GEV_unrestricted_endpoint
+  - GPD_upper_endpoint
+  - GEV_upper_endpoint
+  - GEV_lower_endpoint
+  - GPD_log_likelihood_optim
+  - GEV_log_likelihood_optim
+  - optim_step_GPD_profile
+  - optim_step_GEV_profile
+  - GPD_profile_loglik_internal
+  - GEV_profile_loglik_internal
+  - GPD_covariate_matrices
+  - GEV_covariate_matrices
+  - GPD_param_init
+  - GEV_param_init
+  - GPD_profpar_id
+  - GEV_profpar_id
+  - GPD_param_names
+  - GEV_param_names
+  - vector_insert
+  - get_doFuture_operator
+  - set_doFuture_strategy
+  - end_doFuture_strategy
+  
+- unused:
+  - GPD_covariate_matrix
+  - GEV_covariate_matrix
+  - GEV_paraboot_CIs_multiple
+
 

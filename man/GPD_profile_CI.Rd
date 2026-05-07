@@ -114,5 +114,5 @@ profile log-likelihood evaluation values, and related metadata.}
 GPD profile CI using binary search
 }
 \references{
-TODO: Coles Book ?
+Coles, S. (2001). \emph{An Introduction to Statistical Modeling of Extreme Values}. Springer. doi:\href{https://doi.org/10.1007/978-1-4471-3675-0}{10.1007/978-1-4471-3675-0}.
 }

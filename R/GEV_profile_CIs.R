@@ -436,7 +436,7 @@ GEV_profile_loglik <- function(val, Z, parameter=c("shape", "location", "scale",
 #' @export
 #'
 #' @references
-#' TODO: Coles Book ?
+#' Coles, S. (2001). *An Introduction to Statistical Modeling of Extreme Values*. Springer. doi:[10.1007/978-1-4471-3675-0](https://doi.org/10.1007/978-1-4471-3675-0).
 GEV_profile_loglik_curve <- function(Z, parameter=c("shape", "location", "scale", "return_level", "endpoint"),
                                      subparam_id=0, alpha=0.05, return_period=100., orthogonal=FALSE,
                                      X=NULL, x_rlvl=NULL, loc_cols=NULL, scale_cols=NULL, shape_cols=NULL,
@@ -610,7 +610,7 @@ GEV_profile_loglik_curve <- function(Z, parameter=c("shape", "location", "scale"
 #' @export
 #'
 #' @references
-#' TODO: Coles Book ?
+#' Coles, S. (2001). *An Introduction to Statistical Modeling of Extreme Values*. Springer. doi:[10.1007/978-1-4471-3675-0](https://doi.org/10.1007/978-1-4471-3675-0).
 GEV_profile_CI <- function(Z, parameter=c("shape", "location", "scale", "return_level", "endpoint"),
                            subparam_id=0, alpha=0.05, return_period=100., orthogonal=FALSE,
                            X=NULL, x_rlvl=NULL, loc_cols=NULL, scale_cols=NULL, shape_cols=NULL, warmstart_table=NULL,
@@ -983,7 +983,7 @@ GEV_paraboot_CIs_multiple <- function(Z, alpha=0.05, return_period=100., R=1000,
       scalei <- c(scamat %*% sc_parsi)
       shapei <- c(shamat %*% sh_parsi)
       
-      #compute RL EP TODO for multiple x_rl????????
+      #compute RL EP TODO for multiple x_rl?
       rlsi <- GEV_return_level(loc=locationi, scale=scalei, shape=shapei, return_period=return_period)
       epsi <- GEV_endpoint(loc=locationi, scale=scalei, shape=shapei, endpoint_type=endpoint_type)
     }
