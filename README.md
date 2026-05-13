@@ -84,17 +84,17 @@ inference.
 
 Coles, S. (2001). *An Introduction to Statistical Modeling of Extreme
 Values*. Springer.
-<doi:%5B10.1007/978-1-4471-3675-0>\](<https://doi.org/10.1007/978-1-4471-3675-0>).
+[doi:10.1007/978-1-4471-3675-0](https://doi.org/10.1007/978-1-4471-3675-0).
 
 Pasche, O. C., Lam, H., and Engelke, S. (2026). “Extreme Conformal
 Prediction: Reliable Intervals for High-Impact Events.” *Extremes*.
-<doi:%5B10.1007/s10687-026-00536-9>\](<https://doi.org/10.1007/s10687-026-00536-9>).
+[doi:10.1007/s10687-026-00536-9](https://doi.org/10.1007/s10687-026-00536-9).
 
 Zeder, J., Sippel, S., Pasche, O. C., Engelke, S., and Fischer, E. M.
 (2023). “The effect of a short observational record on the statistics of
 temperature extremes.” *Geophysical Research Letters* 50(16),
 e2023GL104090.
-<doi:%5B10.1029/2023GL104090>\](<https://doi.org/10.1029/2023GL104090>).
+[doi:10.1029/2023GL104090](https://doi.org/10.1029/2023GL104090).
 
 ------------------------------------------------------------------------
 
