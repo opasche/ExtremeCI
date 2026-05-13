@@ -436,7 +436,7 @@ GEV_profile_loglik <- function(val, Z, parameter=c("shape", "location", "scale",
 #' @export
 #'
 #' @references
-#' Coles, S. (2001). *An Introduction to Statistical Modeling of Extreme Values*. Springer. doi:[10.1007/978-1-4471-3675-0](https://doi.org/10.1007/978-1-4471-3675-0).
+#' Coles, S. (2001). *An Introduction to Statistical Modeling of Extreme Values*. Springer. \doi{doi:10.1007/978-1-4471-3675-0}.
 GEV_profile_loglik_curve <- function(Z, parameter=c("shape", "location", "scale", "return_level", "endpoint"),
                                      subparam_id=0, alpha=0.05, return_period=100., orthogonal=FALSE,
                                      X=NULL, x_rlvl=NULL, loc_cols=NULL, scale_cols=NULL, shape_cols=NULL,
@@ -610,7 +610,7 @@ GEV_profile_loglik_curve <- function(Z, parameter=c("shape", "location", "scale"
 #' @export
 #'
 #' @references
-#' Coles, S. (2001). *An Introduction to Statistical Modeling of Extreme Values*. Springer. doi:[10.1007/978-1-4471-3675-0](https://doi.org/10.1007/978-1-4471-3675-0).
+#' Coles, S. (2001). *An Introduction to Statistical Modeling of Extreme Values*. Springer. \doi{doi:10.1007/978-1-4471-3675-0}.
 GEV_profile_CI <- function(Z, parameter=c("shape", "location", "scale", "return_level", "endpoint"),
                            subparam_id=0, alpha=0.05, return_period=100., orthogonal=FALSE,
                            X=NULL, x_rlvl=NULL, loc_cols=NULL, scale_cols=NULL, shape_cols=NULL, warmstart_table=NULL,
