@@ -8,7 +8,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/opasche/ExtremeCI/blob/main/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/opasche/ExtremeCI/blob/v0.2.1/DESCRIPTION)
 
 Pasche OC (2026). *ExtremeCI: Realistic Confidence Intervals for
 Non-Stationary Extreme Value Statistics*. R package version 0.2.1,
