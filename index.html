@@ -10,7 +10,8 @@
 <link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Realistic Confidence Intervals for Non-Stationary Extreme Value Statistics">
+<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><link href="extra.css" rel="stylesheet">
+<meta property="og:title" content="Realistic Confidence Intervals for Non-Stationary Extreme Value Statistics">
 <meta name="description" content="This framework provides versatile algorithms to efficiently infer confidence intervals for extreme value statistics, such as extreme quantiles and return levels, that are representative of the asymmetric uncertainty spread, using extreme value theory extrapolation and the profile likelihood (see e.g., Coles (2001) &lt;doi:10.1007/978-1-4471-3675-0&gt;). Unlike existing algorithms, the CI endpoints are found without the need for a strict prespecified range, can be covariate-dependent, and can be based on weighted samples. This package is motivated by Zeder et al. (2023) &lt;doi:10.1029/2023GL104090&gt; and by Pasche et al. (2026) &lt;doi:10.1007/s10687-026-00536-9&gt;.">
 <meta property="og:description" content="This framework provides versatile algorithms to efficiently infer confidence intervals for extreme value statistics, such as extreme quantiles and return levels, that are representative of the asymmetric uncertainty spread, using extreme value theory extrapolation and the profile likelihood (see e.g., Coles (2001) &lt;doi:10.1007/978-1-4471-3675-0&gt;). Unlike existing algorithms, the CI endpoints are found without the need for a strict prespecified range, can be covariate-dependent, and can be based on weighted samples. This package is motivated by Zeder et al. (2023) &lt;doi:10.1029/2023GL104090&gt; and by Pasche et al. (2026) &lt;doi:10.1007/s10687-026-00536-9&gt;.">
 </head>
@@ -22,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="index.html">ExtremeCI</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -59,14 +60,41 @@
 </h1></div>
 <!-- badges: start -->
 
-<p>The <code>ExtremeCI</code> R package provides versatile algorithms to efficently infer confidence intervals for extreme value statistics, using extreme value theory extrapolation and the profile likelihood. These intervals capture the uncertainty spread of extreme estimates more realistically than most alternative methods, especially for return levels (high quantiles) and for the shape parameter, whose uncertainties are typically highly asymmetric <a href="doi:10.1007/978-1-4471-3675-0">(Coles, 2001)</a>. For return levels and extreme quantiles, the profile likelihood method requires reparametrization of the likelihood function. With nonstationary models, this reparametrization is nontrivial and requires repetition for each local interval, which was not possible with alternative software. This package provides a framework to construct both stationary and nonstationary models with novel confidence endpoint search procedures based on binary search, which do no require a prespecified range. The CIs can also be inferred from weighted samples (work in progress). This package is motivated by <a href="doi:10.1029/2023GL104090">Zeder et al. (2023)</a> and by <a href="doi:10.1007/s10687-026-00536-9">Pasche et al. (2026)</a>.</p>
+<p>The <code>ExtremeCI</code> R package provides versatile algorithms to efficiently infer confidence intervals for extreme value statistics, such as extreme quantiles and return levels, that are representative of the asymmetric uncertainty spread, using extreme value theory extrapolation and the profile likelihood (see e.g., <a href="https://doi.org/10.1007/978-1-4471-3675-0" class="external-link">Coles, 2001</a>). Unlike existing algorithms, the CI endpoints are found without the need for a strict prespecified range, can be covariate-dependent, and can be based on weighted samples. This package is motivated by <a href="https://doi.org/10.1029/2023GL104090" class="external-link">Zeder et al. (2023)</a> and by <a href="https://doi.org/10.1007/s10687-026-00536-9" class="external-link">Pasche et al. (2026)</a>.</p>
+<!-- The `ExtremeCI` R package provides versatile algorithms to efficiently infer confidence intervals
+for extreme value statistics, using extreme value theory extrapolation and the profile likelihood.
+These intervals capture the uncertainty spread of extreme estimates more realistically than most alternative methods,
+especially for return levels (high quantiles) and for the shape parameter, whose uncertainties are typically highly asymmetric
+[(Coles, 2001)](https://doi.org/10.1007/978-1-4471-3675-0).
+For return levels and extreme quantiles, the profile likelihood method requires reparametrization of the likelihood function.
+With nonstationary models, this reparametrization is nontrivial and requires repetition for each local interval,
+which was not possible with alternative software.
+This package provides a framework to construct both stationary and nonstationary models
+with novel confidence endpoint search procedures based on binary search, which do not require a prespecified range.
+The CIs can also be inferred from weighted samples (work in progress).
+This package is motivated by [Zeder et al. (2023)](https://doi.org/10.1029/2023GL104090) and by [Pasche et al. (2026)](https://doi.org/10.1007/s10687-026-00536-9). -->
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>To install the development version of ExtremeCI from R, run</p>
+<p>To install the latest release of <code>ExtremeCI</code> from CRAN, in an R session, simply run:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"ExtremeCI"</span><span class="op">)</span></span></code></pre></div>
+<p>Or, to install the current development version of <code>ExtremeCI</code>, in an R session, run:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"opasche/ExtremeCI"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="motivation">Motivation<a class="anchor" aria-label="anchor" href="#motivation"></a>
+</h2>
+<p>Confidence intervals based on the profile-likelihood method capture the uncertainty spread of extreme value statistics more realistically than most alternative methods (e.g. based on bootstrapping or the delta-method), especially for return levels (high quantiles) and for the shape parameter, whose uncertainties are typically highly asymmetric (see e.g., <a href="https://doi.org/10.1007/978-1-4471-3675-0" class="external-link">Coles, 2001</a>). For return levels and extreme quantiles, the profile likelihood method requires reparametrization of the likelihood function. With nonstationary models, this reparametrization is nontrivial and requires repetition for each local interval, which was not possible with alternative software. Furthermore, preexisting implementations require prespecified ranges for the CI endpoints search, which is impractical when the uncertainty spread is large or covariate-dependent, or when used as step in a greater pipeline. The <code>ExtremeCI</code> R package provides a framework to construct both stationary and nonstationary models with binary-search procedures to efficiently find the profile likelihood CI endpoints, without requiring a prespecified range. Lastly, weighted inference can optionally be performed using sample weights. In summary, the novelties of this package for realistic extreme value confidence intervals are: - efficient profile-likelihood CI endpoint search procedures without prespecified ranges, for both the peaks-over threshold (GPD) and block maxima (GEV) approaches; - covariate-dependent CIs for nonstationary extreme value models, including for extreme quantiles and return levels; - the option to use sample weights in inference.</p>
+</div>
+<div class="section level2">
+<h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+</h2>
+<p>Coles, S. (2001). <em>An Introduction to Statistical Modeling of Extreme Values</em>. Springer. <a href="doi:%5B10.1007/978-1-4471-3675-0" class="uri">doi:%5B10.1007/978-1-4471-3675-0</a>](<a href="https://doi.org/10.1007/978-1-4471-3675-0" class="external-link uri">https://doi.org/10.1007/978-1-4471-3675-0</a>).</p>
+<p>Pasche, O. C., Lam, H., and Engelke, S. (2026). “Extreme Conformal Prediction: Reliable Intervals for High-Impact Events.” <em>Extremes</em>. <a href="doi:%5B10.1007/s10687-026-00536-9" class="uri">doi:%5B10.1007/s10687-026-00536-9</a>](<a href="https://doi.org/10.1007/s10687-026-00536-9" class="external-link uri">https://doi.org/10.1007/s10687-026-00536-9</a>).</p>
+<p>Zeder, J., Sippel, S., Pasche, O. C., Engelke, S., and Fischer, E. M. (2023). “The effect of a short observational record on the statistics of temperature extremes.” <em>Geophysical Research Letters</em> 50(16), e2023GL104090. <a href="doi:%5B10.1029/2023GL104090" class="uri">doi:%5B10.1029/2023GL104090</a>](<a href="https://doi.org/10.1029/2023GL104090" class="external-link uri">https://doi.org/10.1029/2023GL104090</a>).</p>
 <hr>
 <p>Package created by Olivier C. PASCHE<br>
 Research Institute for Statistics and Information Science,<br>
@@ -77,6 +105,7 @@ Supported by the Swiss National Science Foundation.</p>
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
+<li><a href="https://cloud.r-project.org/package=ExtremeCI" class="external-link">View on CRAN</a></li>
 <li><a href="https://github.com/opasche/ExtremeCI/" class="external-link">Browse source code</a></li>
 <li><a href="https://github.com/opasche/ExtremeCI/issues" class="external-link">Report a bug</a></li>
 </ul>
@@ -108,6 +137,7 @@ Supported by the Swiss National Science Foundation.</p>
 <div class="dev-status">
 <h2 data-toc-skip>Dev status</h2>
 <ul class="list-unstyled">
+<li><a href="https://CRAN.R-project.org/package=ExtremeCI" class="external-link"><img src="https://www.r-pkg.org/badges/version/ExtremeCI" alt="CRAN status"></a></li>
 <li><a href="https://github.com/opasche/ExtremeCI/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/opasche/ExtremeCI/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a></li>
 </ul>
 </div>
